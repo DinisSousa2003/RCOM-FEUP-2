@@ -31,8 +31,12 @@ void initUrl(url *u) {
 int parseUrl(url *u, const char *urlString){
     regex_t re;
   
-    if (regcomp(&re, "^ftp://([a-zA-Z0-9]+):([a-zA-Z0-9]+)@([a-zA-Z0-9$-_.+!*'(),]+):([0-9]+)/([a-zA-Z0-9 /()_,-.]+/([a-zA-Z0-9 ()_,-.]+))$", REG_EXTENDED) != 0) {
-        perror("regcomp");
+    int res = 0;
+    res = regcomp(&re, "^ftp://(?:([a-zA-Z0-9]+):([a-zA-Z0-9]+)@)?([a-zA-Z0-9$_.+!*'(),-]+)(?::([0-9]+))?/([a-zA-Z0-9 /()_,.-]+/([a-zA-Z0-9 ()_,.-]+))$", REG_EXTENDED);
+    if (res != 0) {
+        char buffer[256];
+        regerror(res, &re, buffer, sizeof(buffer));
+        printf("regcomp() failed with '%s'\n", buffer);
         exit(EXIT_FAILURE);
     }
   
