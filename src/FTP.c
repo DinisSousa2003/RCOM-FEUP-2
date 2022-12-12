@@ -6,9 +6,6 @@ int connectSocket(const char* ipAddress, int port) {
     int sockfd;
     struct sockaddr_in server_addr;
 
-    char buf[] = "Mensagem de teste na travessia da pilha TCP/IP\n";
-    size_t bytes;
-
     /*server address handling*/
     bzero((char *) &server_addr, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
@@ -42,7 +39,7 @@ int ftpConnect(ftp* ftp, const char* ip, int port) {
 	ftp->control_socket_fd = socketfd;
 	ftp->data_socket_fd = 0;
 
-	if (ftpRead(ftp, buf, sizeof(buf))) {
+	if (ftpRead(ftp->control_socket_fd, buf, sizeof(buf))) {
 		printf("ERROR: ftpRead failure.\n");
 		return 1;
 	}
@@ -62,7 +59,7 @@ int ftpLogin(ftp* ftp, const char* usermame, const char* password){
         return 1;
     }
 
-    if (ftpRead(ftp, buf, sizeof(buf))) {
+    if (ftpRead(ftp->control_socket_fd, buf, sizeof(buf))) {
         printf("ERROR: ftpRead failure on login uername.\n");
         return 1;
     }
@@ -77,11 +74,12 @@ int ftpLogin(ftp* ftp, const char* usermame, const char* password){
         return 1;
     }
 
-    if (ftpRead(ftp, buf, sizeof(buf))) {
+    if (ftpRead(ftp->control_socket_fd, buf, sizeof(buf))) {
         printf("ERROR: ftpRead failure on login password.\n");
         return 1;
     }
 
+    return 0;
 }
 
 //Given a socket file descriptor, write a string to it
@@ -102,13 +100,13 @@ int ftpWrite(int sockfd, char* buf, size_t size) {
 
 //Given a socket file descriptor, read from it
 int ftpRead(int sockfd, char* buf, size_t size) {
-	FILE* fp = fdopen(ftp->control_socket_fd, "r");
+	FILE* fp = fdopen(sockfd, "r");
 
 	do {
 		memset(buf, 0, size);
-		str = fgets(buf, size, fp);
-		printf("%s", str);
-	} while (!('1' <= str[0] && str[0] <= '5') || str[3] != ' ');
+		fgets(buf, size, fp);
+		printf("%s", buf);
+	} while (!('1' <= buf[0] && buf[0] <= '5') || buf[3] != ' ');
 
 	return 0;
 }

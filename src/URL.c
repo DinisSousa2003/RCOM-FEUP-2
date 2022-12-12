@@ -22,22 +22,55 @@ void initUrl(url *u) {
     memset(u->host, 0, MAX_STRING_LENGTH);
     memset(u->path, 0, MAX_STRING_LENGTH);
     memset(u->filename, 0, MAX_STRING_LENGTH);
-    u->port = 0;
+    u->port = 21; //FTP is on port 21
 }
 
-//TO DO: parse URL
 //Function able to parse the ulr string and return the different parts of the url in the url struct
 //Return 0 if the url is valid, -1 if not
 
 int parseUrl(url *u, const char *urlString){
-    //to do
+    regex_t re;
+  
+    if (regcomp(&re, "^ftp://([a-zA-Z0-9]+):([a-zA-Z0-9]+)@([a-zA-Z0-9$-_.+!*'(),]+):([0-9]+)/([a-zA-Z0-9 /()_,-.]+/([a-zA-Z0-9 ()_,-.]+))$", REG_EXTENDED) != 0) {
+        perror("regcomp");
+        exit(EXIT_FAILURE);
+    }
+  
+    regmatch_t m[re.re_nsub + 1];
+    if (regexec(&re, urlString, re.re_nsub + 1, m, 0) == 0) {
+
+        int start = m[1].rm_so, end = m[1].rm_eo;
+        printf("match: %d %d\n", start, end);
+        strncpy(u->user, urlString + start, end - start);
+        printf("user: %s\n", u->user);
+        start = m[2].rm_so, end = m[2].rm_eo;
+        strncpy(u->password, urlString + start, end - start);
+        printf("password: %s\n", u->password);
+        start = m[3].rm_so, end = m[3].rm_eo;
+        strncpy(u->host, urlString + start, end - start);
+        printf("host: %s\n", u->host);
+        start = m[4].rm_so, end = m[4].rm_eo;
+        strncpy(u->port, urlString + start, end - start);
+        printf("port: %d\n", u->port);
+        start = m[5].rm_so, end = m[5].rm_eo;
+        strncpy(u->path, urlString + start, end - start);
+        printf("path: %s\n", u->path);
+        start = m[6].rm_so, end = m[6].rm_eo;
+        strncpy(u->filename, urlString + start, end - start);
+        printf("filename: %s\n", u->filename);
+    }
+    else
+        printf("no match\n");
+  
+    regfree(&re);
+    return 0;
 }
 
 
 int getIpByHostName(url *u) {
     struct hostent *h;
 
-    if ((h = gethostbyname(argv[1])) == NULL) {
+    if ((h = gethostbyname(u->host)) == NULL) {
         herror("gethostbyname()");
         exit(-1);
     }

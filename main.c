@@ -1,5 +1,5 @@
-#include "includes/URL.h"
-#include "includes/FTP.h"
+#include "include/URL.h"
+#include "include/FTP.h"
 
 
 //unique use case: connect, login host, passive, get path, success (file saved in CWD) or un-success (indicating failing phase)
@@ -34,7 +34,5 @@ int main(int argc, char *argv[]) {
         ftpLogin(&ftp, "anonymous", "anonymous");
     }
 
-    
-    ftpWrite(sockfd, "Mensagem de teste na travessia da pilha TCP/IP\n");
     return 0;
 }
