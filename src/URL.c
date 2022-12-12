@@ -69,7 +69,7 @@ int parseUrl(url *u, const char *urlString){
         printf("filename: %s\n", u->filename);
     }
     else
-        printf("no match\n");
+        printf("No match! Correct usage: ftp://[<user>:<password>@]host[:port]/path/to/filename\n");
   
     regfree(&re);
     return 0;
