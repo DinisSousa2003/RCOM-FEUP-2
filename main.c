@@ -19,9 +19,11 @@ int main(int argc, char *argv[]) {
     url u;
     initUrl(&u);
     //parseUrl(&u, "ftp://user:password@host:port/path/filename");
-    parseUrl(&u, "A");
+    parseUrl(&u, "ftp://ftp.up.pt/pub/gnu/GNUinfo/Audio/index.txt");
     getIpByHostName(&u);
 
+    printf("host: %s\n with ip: %s", u.host, u.ip);
+    
     //FTP CONNECT
     ftp ftp;
     ftpConnect(&ftp, u.host, u.port);

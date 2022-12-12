@@ -15,12 +15,12 @@ int connectSocket(const char* ipAddress, int port) {
     /*open a TCP socket*/
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("socket()");
-        exit(-1);
+        return -1;
     }
     /*connect to the server*/
     if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
         perror("connect()");
-        exit(-1);
+        return -1;
     }
 
     return sockfd;
@@ -76,6 +76,57 @@ int ftpLogin(ftp* ftp, const char* usermame, const char* password){
 
     if (ftpRead(ftp->control_socket_fd, buf, sizeof(buf))) {
         printf("ERROR: ftpRead failure on login password.\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+//Given a socket file descriptor, and a path, change the current directory
+int ftpCWD(ftp* ftp, const char* path) {
+    char buf[1024];
+
+    sprintf(buf, "CWD %s\r\n", path);
+
+    if (ftpWrite(ftp->control_socket_fd, buf, strlen(buf))) {
+        printf("ERROR: ftpWrite failure on CWD.\n");
+        return 1;
+    }
+
+    if (ftpRead(ftp->control_socket_fd, buf, sizeof(buf))) {
+        printf("ERROR: ftpRead failure on CWD.\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+//Given a socket file descriptor, enter passive mode
+int ftpPasv(ftp* ftp) {
+    char buf[1024];
+    char* ip;
+    int port;
+
+    if (ftpWrite(ftp->control_socket_fd, "PASV\r\n", strlen("PASV\r\n"))) {
+        printf("ERROR: ftpWrite failure on PASV.\n");
+        return 1;
+    }
+
+    if (ftpRead(ftp->control_socket_fd, buf, sizeof(buf))) {
+        printf("ERROR: ftpRead failure on PASV.\n");
+        return 1;
+    }
+
+    ip = strtok(buf, "(");
+    ip = strtok(NULL, "(");
+    ip = strtok(ip, ")");
+    ip = strtok(ip, ",");
+
+    port = atoi(strtok(NULL, ",")) * 256;
+    port += atoi(strtok(NULL, ","));
+
+    if ((ftp->data_socket_fd = connectSocket(ip, port)) < 0) {
+        printf("ERROR: Cannot connect socket.\n");
         return 1;
     }
 

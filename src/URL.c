@@ -32,7 +32,7 @@ int parseUrl(url *u, const char *urlString){
     regex_t re;
   
     int res = 0;
-    res = regcomp(&re, "^ftp://(?:([a-zA-Z0-9]+):([a-zA-Z0-9]+)@)?([a-zA-Z0-9$_.+!*'(),-]+)(?::([0-9]+))?/([a-zA-Z0-9 /()_,.-]+/([a-zA-Z0-9 ()_,.-]+))$", REG_EXTENDED);
+    res = regcomp(&re, "^ftp://(([a-zA-Z0-9]+):([a-zA-Z0-9]+)@)?([a-zA-Z0-9$_.+!*'(),-]+)(:([0-9]+))?([a-zA-Z0-9 /()_,.-]*?)/([a-zA-Z0-9 ()_,.-]+)$", REG_EXTENDED);
     if (res != 0) {
         char buffer[256];
         regerror(res, &re, buffer, sizeof(buffer));
@@ -43,25 +43,28 @@ int parseUrl(url *u, const char *urlString){
     regmatch_t m[re.re_nsub + 1];
     if (regexec(&re, urlString, re.re_nsub + 1, m, 0) == 0) {
 
-        int start = m[1].rm_so, end = m[1].rm_eo;
-        printf("match: %d %d\n", start, end);
-        strncpy(u->user, urlString + start, end - start);
-        printf("user: %s\n", u->user);
-        start = m[2].rm_so, end = m[2].rm_eo;
-        strncpy(u->password, urlString + start, end - start);
-        printf("password: %s\n", u->password);
+        int start = m[2].rm_so, end = m[2].rm_eo;
+        if(start > 0 && end > 0){
+            strncpy(u->user, urlString + start, end - start);
+            printf("user: %s\n", u->user);
+        }
+            
         start = m[3].rm_so, end = m[3].rm_eo;
+        if(start > 0 && end > 0){
+            strncpy(u->password, urlString + start, end - start);
+            printf("password: %s\n", u->password);
+        }
+        
+        start = m[4].rm_so, end = m[4].rm_eo;
         strncpy(u->host, urlString + start, end - start);
         printf("host: %s\n", u->host);
-        start = m[4].rm_so, end = m[4].rm_eo;
-        char* port = (char*)malloc(end - start);
-        strncpy(port, urlString + start, end - start);
-        u->port = atoi(port);
-        printf("port: %d\n", u->port);
-        start = m[5].rm_so, end = m[5].rm_eo;
+        
+        
+        start = m[7].rm_so, end = m[7].rm_eo;
         strncpy(u->path, urlString + start, end - start);
         printf("path: %s\n", u->path);
-        start = m[6].rm_so, end = m[6].rm_eo;
+
+        start = m[8].rm_so, end = m[8].rm_eo;
         strncpy(u->filename, urlString + start, end - start);
         printf("filename: %s\n", u->filename);
     }
