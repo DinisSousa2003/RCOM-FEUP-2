@@ -50,7 +50,9 @@ int parseUrl(url *u, const char *urlString){
         strncpy(u->host, urlString + start, end - start);
         printf("host: %s\n", u->host);
         start = m[4].rm_so, end = m[4].rm_eo;
-        strncpy(u->port, urlString + start, end - start);
+        char* port = (char*)malloc(end - start);
+        strncpy(port, urlString + start, end - start);
+        u->port = atoi(port);
         printf("port: %d\n", u->port);
         start = m[5].rm_so, end = m[5].rm_eo;
         strncpy(u->path, urlString + start, end - start);
